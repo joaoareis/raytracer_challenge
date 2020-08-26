@@ -41,6 +41,15 @@ struct PointVector {
 
 impl PointVector {
 
+    // fn newg<T,U,V,Z> (x: T, y: U, z: V, w: Z) -> PointVector{
+    //     PointVector {
+    //         x: x as f32,
+    //         y: y as f32,
+    //         z: z as f32,
+    //         w: w as f32
+    //     }
+    // }
+
     fn new(x: f32, y: f32, z: f32, w: f32) -> PointVector{
         PointVector {
             x,
@@ -161,6 +170,17 @@ impl PointVector {
             w: self.w
 
         }
+     }
+
+     fn dot(&self, p: &PointVector) -> f32 {
+        self.x * p.x + self.y * p.y + self.z * p.z + self.w * p.w
+     }
+
+     fn cross(&self, p: &PointVector) -> PointVector {
+        let cross_x = self.y * p.z - self.z * p.y; 
+        let cross_y = self.z * p.x - self.x * p.z;
+        let cross_z = self.x * p.y - self.y * p.x; 
+        PointVector::new_vector(cross_x, cross_y, cross_z)
      }
 }
 
@@ -407,5 +427,28 @@ mod tests_pointvector {
 
     }
 
+    #[test]
+    fn test_dot() {
+        let v1 = vectori(1,2,3);
+        let v2 = vectori(2,3,4);
+        assert_eq!(v1.dot(&v2), 20.0)
+    }
+
+    #[test]
+    fn test_cross() {
+        let v1 = vectori(1,2,3);
+        let v2 = vectori(2,3,4);
+        assert_eq!(v1.cross(&v2), vectori(-1,2,-1));
+        assert_eq!(v2.cross(&v1), vectori(1,-2,1));
+    }
+
+    // #[test]
+    // fn test_newg() {
+    //     PointVector::newg(1,-1,1,-1);
+
+    // }
+
 }
+
+
 
