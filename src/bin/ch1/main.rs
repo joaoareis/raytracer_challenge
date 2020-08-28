@@ -1,4 +1,4 @@
-use raytracer::{PointVector,vector,point};
+use raytracer::point_vector::{PointVector,vector,point};
 
 struct Projectile {
     position: PointVector,
