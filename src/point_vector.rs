@@ -19,7 +19,7 @@ pub struct PointVector {
 
 impl PointVector {
 
-    fn new(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>, w: impl Into<f64>) -> PointVector{
+    pub fn new(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>, w: impl Into<f64>) -> PointVector{
         PointVector {
             x: x.into() as f32,
             y: y.into() as f32,

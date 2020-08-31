@@ -47,7 +47,7 @@ fn tick(e: &Environment, p: Projectile) -> Projectile{
 
 fn main(){
     let mut cv = Canvas::new(900,550);
-    let mut p = Projectile::new(point(0,1,0), vector(1,2,0).normalize()*11.25);
+    let mut p = Projectile::new(point(0,1,0), vector(1,3,0).normalize()*11.25);
     let e = Environment::new(vector(0,-0.1,0), vector(-0.01, 0, 0));
 
     loop {
@@ -56,7 +56,11 @@ fn main(){
         if p.position.y < 0.0 {
             break;
         }
-        let real_height = cv.height - p.y().round() as usize; 
+        let projectile_height = p.y().round() as usize;
+        let real_height = match projectile_height {
+            p if p <= cv.height => cv.height - projectile_height,
+            _ => cv.height
+        }; 
         let real_width = p.x().round() as usize; 
         cv.write_pixel(real_width, real_height, c);
     }
