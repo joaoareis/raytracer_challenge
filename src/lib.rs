@@ -3,3 +3,4 @@ pub mod color;
 pub mod utils;
 pub mod canvas;
 pub mod matrix;
+pub mod transformations;

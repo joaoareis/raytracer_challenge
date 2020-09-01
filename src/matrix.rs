@@ -5,7 +5,7 @@ use crate::point_vector::PointVector;
 
 
 #[derive(Debug, Clone)]
-struct Matrix {
+pub struct Matrix {
     values : Vec<Vec<f32>>,
     i_dim: usize,
     j_dim: usize
@@ -18,7 +18,7 @@ fn mul_matrix_pointvector(m: &Matrix, p: &PointVector) -> PointVector {
 }
 
 impl Matrix {
-    fn new(values: Vec<Vec<f32>>) -> Matrix {
+    pub fn new(values: Vec<Vec<f32>>) -> Matrix {
         let i_dim = values.len();
         let mut ctrl = true;
         let mut j_dim = 0;
@@ -37,9 +37,57 @@ impl Matrix {
         }
     }
 
+    pub fn set(&mut self, row: usize, col: usize, value: impl Into<f64>) {
+
+        self.values[row][col] = value.into() as f32;
+    }
+
+    fn divide_by_scalar(&self, scalar: f32) -> Matrix {
+        let mut new_matrix_values: Vec<Vec<f32>> = vec![];
+        for i in 0..self.shape().0 {
+            
+                let mut row: Vec<f32> = vec![];
+                for j in 0..self.shape().1 {
+                   
+                        row.push(self.get(i, j)/scalar);
+                    
+                }
+                new_matrix_values.push(row);
+            
+        }
+        Matrix::new(new_matrix_values)
+
+    }
     fn is_invertible(&self) -> bool {
         if self.determinant() == 0.0 { false}
         else { true}
+    }
+
+    fn cofactor_matrix(&self) -> Matrix{
+        let mut cofactor_matrix_values: Vec<Vec<f32>> = vec![];
+        for i in 0..self.shape().0 {
+            
+                let mut row: Vec<f32> = vec![];
+                for j in 0..self.shape().1 {
+                   
+                        row.push(self.cofactor(i, j));
+                    
+                }
+                cofactor_matrix_values.push(row);
+            
+        }
+        Matrix::new(cofactor_matrix_values)
+    }
+    
+
+    pub fn inverse(&self) -> Matrix {
+        if self.is_invertible() == false {
+            panic!("Non invertible matrix.")
+        }
+        let mut inverse_matrix = self.cofactor_matrix();
+        inverse_matrix = inverse_matrix.transpose();
+        inverse_matrix = inverse_matrix.divide_by_scalar(self.determinant());
+        inverse_matrix
     }
     fn submatrix(&self, row_to_remove: usize, col_to_remove: usize) -> Matrix{
         let mut submatrix_values: Vec<Vec<f32>> = vec![];
@@ -112,7 +160,7 @@ impl Matrix {
 
     }
 
-    fn identity(diag_size: usize) -> Matrix {
+    pub fn identity(diag_size: usize) -> Matrix {
         let mut values: Vec<Vec<f32>> = vec![];
         for i in 0..diag_size {
             let mut row: Vec<f32> = vec![];
@@ -340,5 +388,52 @@ mod tests_matrix {
         assert_eq!(m2.cofactor(0,2),210.0);
         assert_eq!(m2.cofactor(0,3),51.0);
         assert_eq!(m2.determinant(),-4071.0);
+    }
+
+    #[test]
+    fn test_is_invertible() {
+        let m1 = Matrix::new(vec![vec![6.0, 4.0, 4.0, 4.0], vec![5.0, 5.0, 7.0, 6.0], vec![4.0, -9.0, 3.0, -7.0], vec![9.0, 1.0, 7.0, -6.0]]);
+        let m2 = Matrix::new(vec![vec![-4.0, 2.0, -2.0, -3.0], vec![9.0, 6.0, 2.0, 6.0], vec![0.0, -5.0, 1.0, -5.0], vec![0.0, 0.0, 0.0, 0.0]]);
+
+        assert_eq!(m1.determinant(),-2120.0);
+        assert_eq!(m2.determinant(),0.0);
+
+        assert_eq!(m1.is_invertible(),true);
+        assert_eq!(m2.is_invertible(),false);
+
+    }
+
+    #[test]
+    fn test_inverse() {
+        let a = Matrix::new(vec![vec![-5.0, 2.0, 6.0, -8.0],vec![1.0, -5.0, 1.0, 8.0],vec![7.0, 7.0, -6.0, -7.0],vec![1.0, -3.0, 7.0, 4.0]]);
+        let b = a.inverse();
+
+        assert_eq!(a.determinant(),532.0);
+        assert_eq!(a.cofactor(2, 3), -160.0);
+        assert_eq!(b.get(3,2),-160.0/532.0);
+        assert_eq!(a.cofactor(3, 2), 105.0);
+        assert_eq!(b.get(2,3),105.0/532.0);
+        assert_eq!(b, Matrix::new(vec![vec![0.21805, 0.45113, 0.2406, -0.04511],vec![-0.80827, -1.45677, -0.44361, 0.52068],vec![-0.07895, -0.22368, -0.05263, 0.19737],vec![-0.52256, -0.81391, -0.30075, 0.30639]]));
+    }
+
+    #[test]
+    fn test_inverse2() {
+        let a = Matrix::new(vec![vec![8.0, -5.0, 9.0, 2.0],vec![7.0, 5.0, 6.0, 1.0],vec![-6.0, 0.0, 9.0, 6.0],vec![-3.0, 0.0, -9.0, -4.0]]);
+        assert_eq!(a.inverse(),Matrix::new(vec![vec![-0.15385, -0.15385, -0.28205, -0.53846],vec![-0.07692, 0.12308, 0.02564, 0.03077],vec![0.35897, 0.35897, 0.4359, 0.92308],vec![-0.69231, -0.69231, -0.76923, -1.92308]]));
+    }
+
+    #[test]
+    fn test_inverse3() {
+        let a = Matrix::new(vec![vec![9.0, 3.0, 0.0, 9.0],vec![-5.0, -2.0, -6.0, -3.0],vec![-4.0, 9.0, 6.0, 4.0],vec![-7.0, 6.0, 6.0, 2.0]]);
+        assert_eq!(a.inverse(),Matrix::new(vec![vec![-0.04074, -0.07778, 0.14444, -0.22222],vec![-0.07778, 0.03333, 0.36667, -0.33333],vec![-0.02901, -0.1463, -0.10926, 0.12963],vec![0.17778, 0.06667, -0.26667, 0.33333]]));
+    }
+
+    #[test]
+    fn test_inverse4(){
+        let a = Matrix::new(vec![vec![3.0, -9.0, 7.0, 3.0],vec![3.0, -8.0, 2.0, -9.0],vec![-4.0, 4.0, 4.0, 1.0],vec![-6.0, 5.0, -1.0, 1.0]]);
+        let b = Matrix::new(vec![vec![8.0, 2.0, 2.0, 2.0],vec![3.0, -1.0, 7.0, 0.0],vec![7.0, 0.0, 5.0, 4.0],vec![6.0, -2.0, 0.0, 5.0],]);
+        let c = &a * &b;
+        assert_eq!(&c*&b.inverse(),a) 
+
     }
 }
