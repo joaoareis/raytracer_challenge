@@ -9,7 +9,7 @@ pub fn point(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> PointVe
     PointVector::new_point(x,y,z)
 }
 
-#[derive(PartialEq, PartialOrd, Clone, Copy, Debug)]
+#[derive(PartialOrd, Clone, Copy, Debug)]
 pub struct PointVector {
     pub x: f32,
     pub y: f32,
@@ -196,6 +196,14 @@ impl Div<i32> for PointVector {
     }
 }
 
+impl PartialEq for PointVector {
+    fn eq(&self, other: &Self) -> bool {
+        compare_float(&self.x, &other.x) && compare_float(&self.y, &other.y) && compare_float(&self.z, &other.z) && compare_float(&self.w, &other.w)
+        
+    }
+}
+impl Eq for PointVector {}
+
 #[cfg(test)]
 mod tests_pointvector {
     use super::*;
@@ -339,8 +347,8 @@ mod tests_pointvector {
     #[test]
     fn test_mul() {
         let v = PointVector::new(1,-2,3, -4);
-        assert_eq!((v*3.5)==PointVector::new(3.5,-7.0,10.5, -14.0), true);
-        assert_eq!((v*3.5)==PointVector::new(3.5,-7.0,10.5, -14.1), false);
+        assert_eq!(v*3.5, PointVector::new(3.5,-7.0,10.5, -14.0));
+        assert_ne!(v*3.5, PointVector::new(3.5,-7.0,10.5, -14.1));
     }
 
     #[test]
