@@ -3,7 +3,7 @@ use crate::point_vector::{point,vector};
 use std::f32::consts;
 
 
-fn translate(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix {
+pub fn translate(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let x = x.into() as f32;
     let y = y.into() as f32;
@@ -14,7 +14,7 @@ fn translate(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix 
     m
 }
 
-fn scaling(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix {
+pub fn scaling(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let x = x.into() as f32;
     let y = y.into() as f32;
@@ -25,7 +25,7 @@ fn scaling(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> Matrix {
     m
 }
 
-fn rotation_x(r: impl Into<f64>) -> Matrix {
+pub fn rotation_x(r: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let r = r.into() as f32;
     let c = r.cos();
@@ -37,7 +37,7 @@ fn rotation_x(r: impl Into<f64>) -> Matrix {
     m
 }
 
-fn rotation_y(r: impl Into<f64>) -> Matrix {
+pub fn rotation_y(r: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let r = r.into() as f32;
     let c = r.cos();
@@ -49,7 +49,7 @@ fn rotation_y(r: impl Into<f64>) -> Matrix {
     m
 }
 
-fn rotation_z(r: impl Into<f64>) -> Matrix {
+pub fn rotation_z(r: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let r = r.into() as f32;
     let c = r.cos();
@@ -61,7 +61,7 @@ fn rotation_z(r: impl Into<f64>) -> Matrix {
     m
 }
 
-fn shearing(x_y: impl Into<f64>, x_z: impl Into<f64>, y_x: impl Into<f64>, y_z: impl Into<f64>, z_x: impl Into<f64>, z_y: impl Into<f64>) -> Matrix {
+pub fn shearing(x_y: impl Into<f64>, x_z: impl Into<f64>, y_x: impl Into<f64>, y_z: impl Into<f64>, z_x: impl Into<f64>, z_y: impl Into<f64>) -> Matrix {
     let mut m = Matrix::identity(4);
     let x_y = x_y.into() as f32;
     let x_z = x_z.into() as f32;
@@ -209,6 +209,39 @@ mod tests_matrix {
         let p1 = point(2,3,4);
         assert_eq!(&transform * &p1, point(2, 3, 7))
         
+    }
+
+    #[test]
+    fn test_all_transformations1() {
+        let p = point(1,0,1);
+        let A = rotation_x(consts::PI/2.0);
+        let B = scaling(5,5,5);
+        let C = translate(10, 5, 7);
+
+        let p2 = &A * &p;
+        assert_eq!(p2, point(1,-1,0));
+
+        let p3 = &B * &p2;
+        assert_eq!(p3, point(5, -5, 0));
+
+        let p4 = &C * &p3;
+        assert_eq!(p4, point(15, 0, 7));
+
+
+
+    }
+
+    #[test]
+    fn test_all_transformations2() {
+        let p = point(1,0,1);
+        let A = rotation_x(consts::PI/2.0);
+        let B = scaling(5,5,5);
+        let C = translate(10, 5, 7);
+
+        assert_eq!(&(&(&C * &B) * &A) * &p, point(15, 0, 7));
+
+
+
     }
 
 }
