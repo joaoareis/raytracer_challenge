@@ -38,7 +38,7 @@ impl PointVector {
         PointVector::new(x,y,z,1.0)
         
     }
-    fn is_point(&self) -> bool {
+    pub fn is_point(&self) -> bool {
         if self.w == 1.0 {
             true
         }
@@ -47,7 +47,7 @@ impl PointVector {
         }
     }
 
-    fn is_vector(&self) -> bool {
+    pub fn is_vector(&self) -> bool {
         if self.w == 0.0 {
             true
         }
@@ -121,7 +121,7 @@ impl PointVector {
         }
      }
 
-     fn dot(&self, p: &PointVector) -> f32 {
+     pub fn dot(&self, p: &PointVector) -> f32 {
         self.x * p.x + self.y * p.y + self.z * p.z + self.w * p.w
      }
 
