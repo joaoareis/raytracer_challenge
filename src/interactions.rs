@@ -1,9 +1,63 @@
-use crate::shapes::Sphere;
+use crate::shapes::{Sphere,Shape};
 use crate::ray::Ray;
+use crate::utils::compare_float;
 use crate::point_vector::{PointVector,point,vector};
 
 
-pub fn intersect(s: &Sphere, r: &Ray) -> Vec<f32>{
+pub struct Intersections<'a> {
+    pub v: Vec<Intersection<'a>>
+}
+
+impl<'a> Intersections<'a> {
+    pub fn new(v: Vec<Intersection>) -> Intersections {
+        Intersections{v}
+    }
+
+    pub fn sort(&mut self) {
+        self.v.sort_by(|a, b| a.t.partial_cmp(&b.t).unwrap())
+    }
+
+    pub fn get_intersections_vector(&self) -> & Vec<Intersection>{
+        &self.v
+    }
+
+    pub fn hit(&mut self) -> Option<Intersection> {
+        let mut curr_hit = self.v[0];
+        for i in self.v.iter() {
+            if curr_hit.t > i.t || (curr_hit.t <0.0 && i.t > 0.0){
+                curr_hit = *i;
+            }
+        }
+        if curr_hit.t < 0.0 {
+            None
+        }
+        else {
+            Some(curr_hit)
+        }
+    }
+}
+
+#[derive(Debug,Clone,Copy)]
+pub struct Intersection<'a> {
+    pub t: f32,
+    pub obj: &'a Sphere
+}
+
+impl<'a> Intersection<'a> {
+    pub fn new(t: impl Into<f64>, obj: &Sphere) -> Intersection {
+        Intersection {t: t.into() as f32, obj}
+    }
+}
+
+impl PartialEq for Intersection<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        compare_float(&self.t, &other.t) && (self.obj == other.obj)
+        
+    }
+}
+impl Eq for Intersection<'_> {}
+
+pub fn intersect<'a>(s: &'a Sphere, r: &Ray) -> Vec<Intersection<'a>>{
 
     let sphere_to_ray = r.origin - s.center;
     let a = r.direction.dot(&r.direction);
@@ -18,12 +72,13 @@ pub fn intersect(s: &Sphere, r: &Ray) -> Vec<f32>{
         let t2 = (-b + discriminant.sqrt()) / (2.0*a) ;
         let mut v = vec![t1,t2];
         v.sort_by(|a,b| a.partial_cmp(b).unwrap());
-        v
+        vec![Intersection::new(v[0],&s), Intersection::new(v[1],&s)]
 
         
     }
 
 }
+
 
 #[cfg(test)]
 mod tests_shapes {
@@ -36,8 +91,8 @@ mod tests_shapes {
         let xs = intersect(&s, &r);
 
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 4.0);
-        assert_eq!(xs[1], 6.0);
+        assert_eq!(xs[0].t, 4.0);
+        assert_eq!(xs[1].t, 6.0);
         }
 
     #[test]
@@ -47,8 +102,8 @@ mod tests_shapes {
         let xs = intersect(&s, &r);
 
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], 5.0);
-        assert_eq!(xs[1], 5.0);
+        assert_eq!(xs[0].t, 5.0);
+        assert_eq!(xs[1].t, 5.0);
         }
 
     #[test]
@@ -68,8 +123,8 @@ mod tests_shapes {
 
         println!("{:?}", xs);
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], -1.0);
-        assert_eq!(xs[1], 1.0);
+        assert_eq!(xs[0].t, -1.0);
+        assert_eq!(xs[1].t, 1.0);
         }
     
     #[test]
@@ -79,10 +134,98 @@ mod tests_shapes {
         let xs = intersect(&s, &r);
 
         assert_eq!(xs.len(), 2);
-        assert_eq!(xs[0], -6.0);
-        assert_eq!(xs[1], -4.0);
+        assert_eq!(xs[0].t, -6.0);
+        assert_eq!(xs[1].t, -4.0);
         }
 
+    #[test]
+    fn test_intersect_6() {
+        let r = Ray::new(point(0,0,5), vector(0, 0, 1));
+        let s = Sphere::new();
+        let xs = intersect(&s, &r);
+
+        assert_eq!(xs.len(), 2);
+        assert_eq!(*xs[0].obj, s);
+        assert_eq!(*xs[1].obj, s);
+        assert_eq!(std::ptr::eq(xs[0].obj,&s),true);
+        }
+    
+    #[test]
+    fn test_intersection_new(){
+        let t = 3.5;
+        let s = Sphere::new();
+
+        let p = point(1, 1, 1);
+        let mut s2 = Sphere::new();
+        s2.center = p;
+        let i = Intersection::new(t, &s);
+        assert_eq!(i.t,t);
+        assert_eq!(*i.obj, s);
+        assert_ne!(*i.obj, s2);
+    }
+
+    #[test]
+    fn test_intersections(){
+        let s = Sphere::new();
+        let i1 = Intersection::new(1.0, &s);
+        let i2 = Intersection::new(2.0, &s);
+        let xs = vec![i1,i2];
+        assert_eq!(xs.len(),2);
+        assert_eq!(xs[0].t,1.0);
+        assert_eq!(xs[1].t,2.0);
+    }
+
+    #[test]
+    fn test_intersections2(){
+        let s = Sphere::new();
+        let i1 = Intersection::new(1.0, &s);
+        let i2 = Intersection::new(2.0, &s);
+        let xs = vec![i1,i2];
+        assert_eq!(xs.len(),2);
+        assert_eq!(xs[0].t,1.0);
+        assert_eq!(xs[1].t,2.0);
+    }
+
+    #[test]
+    fn test_hit1() {
+        let s = Sphere::new();
+        let i1 = Intersection::new(1, &s);
+        let i2 = Intersection::new(2, &s);
+        let mut xs = Intersections::new(vec![i1,i2]);
+        let i = xs.hit().unwrap();
+        assert_eq!(i,i1)
+    }
+
+    #[test]
+    fn test_hit2() {
+        let s = Sphere::new();
+        let i1 = Intersection::new(-1, &s);
+        let i2 = Intersection::new(1, &s);
+        let mut xs = Intersections::new(vec![i1,i2]);
+        let i = xs.hit().unwrap();
+        assert_eq!(i,i2)
+    }
+
+    #[test]
+    fn test_hit3() {
+        let s = Sphere::new();
+        let i1 = Intersection::new(-2, &s);
+        let i2 = Intersection::new(-1, &s);
+        let mut xs = Intersections::new(vec![i1,i2]);
+        let i = xs.hit();
+        assert_eq!(i,None)
+    }
+
+    #[test]
+    fn test_hit4() {
+        let s = Sphere::new();
+        let i1 = Intersection::new(5, &s);
+        let i2 = Intersection::new(7, &s);
+        let i3 = Intersection::new(-3, &s);
+        let i4 = Intersection::new(3, &s);
+        let mut xs = Intersections::new(vec![i1,i2,i3,i4]);
+        let i = xs.hit().unwrap();
+        assert_eq!(i,i4)
+    }
+
 }
-
-
