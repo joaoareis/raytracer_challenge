@@ -39,14 +39,10 @@ impl Canvas {
         }
     }
 
-    pub fn write_pixel_f32_safe(&mut self, w: f32, h: f32, c: Color) {
+    pub fn write_pixel_f32(&mut self, w: f32, h: f32, c: Color) {
         let w = w.round() as usize;
         let h = h.round() as usize;
-        if (w > self.width) && (h > self.height) {
-            return
-        } else {
-            self.write_pixel(w, h, c);
-        }
+        self.write_pixel(w, h, c);
     }
 
     fn get_pixel(&self, w: usize, h: usize) -> Color {

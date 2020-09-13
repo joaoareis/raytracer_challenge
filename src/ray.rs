@@ -22,9 +22,9 @@ impl Ray {
     }
 
     pub fn transform(&self, transformation_matrix: &Matrix) -> Ray {
-        let inv_transform = transformation_matrix.inverse();
-        let new_origin = &inv_transform * &self.origin;
-        let new_direction = &inv_transform * &self.direction;
+        //let inv_transform = transformation_matrix.inverse();
+        let new_origin = transformation_matrix * &self.origin;
+        let new_direction = transformation_matrix * &self.direction;
         Ray::new(new_origin, new_direction)
     }
 }

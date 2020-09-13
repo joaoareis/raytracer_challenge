@@ -18,7 +18,7 @@ fn main() {
         for r in 0..12 {
             for i in 0..3 {
                 for j in 0..3 {
-                    cv.write_pixel_f32_safe(p.x+i as f32, p.y+j as f32, c);
+                    cv.write_pixel_f32(p.x+i as f32, p.y+j as f32, c);
                 }
             }
             v = &rotation_matrix * &v;

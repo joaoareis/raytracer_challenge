@@ -21,7 +21,15 @@ impl<'a> Intersections<'a> {
         &self.v
     }
 
-    pub fn hit(&mut self) -> Option<Intersection> {
+    pub fn new_from_intersect(s: &'a Sphere, r: &Ray) -> Intersections<'a> {
+        let i = intersect(s, r);
+        Self::new(i)
+    }
+
+    pub fn hit(self) -> Option<Intersection<'a>> {
+        if self.v.len() == 0 {
+            return None
+        }
         let mut curr_hit = self.v[0];
         for i in self.v.iter() {
             if curr_hit.t > i.t || (curr_hit.t <0.0 && i.t > 0.0){
@@ -58,7 +66,7 @@ impl PartialEq for Intersection<'_> {
 impl Eq for Intersection<'_> {}
 
 pub fn intersect<'a>(s: &'a Sphere, r: &Ray) -> Vec<Intersection<'a>>{
-
+    let r = r.transform(&s.transform.inverse());
     let sphere_to_ray = r.origin - s.center;
     let a = r.direction.dot(&r.direction);
     let b = 2.0 * r.direction.dot(&sphere_to_ray);
@@ -80,9 +88,11 @@ pub fn intersect<'a>(s: &'a Sphere, r: &Ray) -> Vec<Intersection<'a>>{
 }
 
 
+
 #[cfg(test)]
 mod tests_shapes {
     use super::*;
+    use crate::transformations;
 
     #[test]
     fn test_intersect_1() {
@@ -226,6 +236,34 @@ mod tests_shapes {
         let mut xs = Intersections::new(vec![i1,i2,i3,i4]);
         let i = xs.hit().unwrap();
         assert_eq!(i,i4)
+    }
+
+    #[test]
+    fn test_hit5() {
+        let mut xs = Intersections::new(vec![]);
+        let i = xs.hit();
+        assert_eq!(i, None)
+
+    }
+
+    #[test]
+    fn test_intersection_scaling() {
+        let r = Ray::new(point(0, 0, -5), vector(0, 0, 1));
+        let mut s = Sphere::new();
+        s.set_transform(&transformations::scaling(2, 2, 2));
+        let xs = intersect(&s, &r);
+        assert_eq!(xs.len(), 2);
+        assert_eq!(xs[0].t, 3.0);
+        assert_eq!(xs[1].t, 7.0);
+    }
+
+    #[test]
+    fn test_intersection_translation() {
+        let r = Ray::new(point(0, 0, -5), vector(0, 0, 1));
+        let mut s = Sphere::new();
+        s.set_transform(&transformations::translate(5, 0, 0));
+        let xs = intersect(&s, &r);
+        assert_eq!(xs.len(), 0);
     }
 
 }
