@@ -8,12 +8,14 @@ use raytracer::color::Color;
 use std::fs;
 
 fn main() {
-    let pixels = 300;
+    let pixels = 50;
     let wall_size = 7.0;
     let half = wall_size/2.0;
     let pixel_size = wall_size as f32/ pixels as f32;
     let mut cv = Canvas::new(pixels,pixels);
-    let s = Sphere::new();
+    let mut s = Sphere::new();
+    let t = transformations::scaling(1, 0.1, 0.1);
+    s.set_transform(&t);
     let c = Color::new(1,0,0);
 
     for x in 0..pixels {

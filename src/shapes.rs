@@ -28,6 +28,14 @@ impl Sphere {
         self.transform = m.clone()
     }
 
+    pub fn normal_at(&self, world_point: PointVector) -> PointVector {
+        let object_point = &self.transform.inverse() * &world_point;
+        let mut normal_vector = (object_point - point(0, 0, 0)).normalize();
+        normal_vector = &self.transform.inverse().transpose() * &normal_vector;
+        normal_vector.w = 0.0;
+        normal_vector.normalize()
+    }
+
 }
 
 impl PartialEq for Sphere {
@@ -60,5 +68,57 @@ mod tests_sphere {
         s.set_transform(&t);
         assert_eq!(s.transform, t)
 
+    }
+    #[test]
+    fn test_normal_at() {
+        let s = Sphere::new();
+        let n = s.normal_at(point(1,0,0));
+        assert_eq!(n, vector(1, 0, 0));
+    }
+    #[test]
+    fn test_normal_at2() {
+        let s = Sphere::new();
+        let n = s.normal_at(point(0,1,0));
+        assert_eq!(n, vector(0, 1, 0));
+    }
+    #[test]
+    fn test_normal_at3() {
+        let s = Sphere::new();
+        let n = s.normal_at(point(0,0,1));
+        assert_eq!(n, vector(1, 0, 0));
+    }
+    #[test]
+    fn test_normal_at4() {
+        let s = Sphere::new();
+        let c = 3.0_f32.sqrt()/3.0;
+        let n = s.normal_at(point(c,c,c));
+        assert_eq!(n, vector(c, c, c));
+    }
+
+    #[test]
+    fn test_normal_at5() {
+        let s = Sphere::new();
+        let c = 3.0_f32.sqrt()/3.0;
+        let n = s.normal_at(point(c,c,c));
+        assert_eq!(n, n.normalize());
+    }
+
+    #[test]
+    fn test_normal_at6() {
+        let mut s = Sphere::new();
+        s.set_transform(&transformations::translate(0, 1, 0));
+        let n = s.normal_at(point(0,1.70711,-0.70711));
+        assert_eq!(n, vector(0, 0.70711, -0.70711));
+    }
+
+    #[test]
+    fn test_normal_at7() {
+        let mut s = Sphere::new();
+        let m = &transformations::scaling(1, 0.5, 1) * &transformations::rotation_z(std::f32::consts::PI/5.0);
+        s.set_transform(&m);
+        let y = 2.0_f32.sqrt()/2.0;
+        let z = -y;
+        let n = s.normal_at(point(0,y,z));
+        assert_eq!(n, vector(0, 0.97014, -0.24254));
     }
 }

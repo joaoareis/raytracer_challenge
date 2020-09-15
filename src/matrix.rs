@@ -147,7 +147,7 @@ impl Matrix {
         else {-submatrix.determinant()}
     }
 
-    fn transpose(&self) -> Matrix {
+    pub fn transpose(&self) -> Matrix {
         let mut values: Vec<Vec<f32>> = vec![];
         for i in 0..self.shape().0 {
             let mut row: Vec<f32> = vec![];

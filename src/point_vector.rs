@@ -9,6 +9,13 @@ pub fn point(x: impl Into<f64>, y: impl Into<f64>, z: impl Into<f64>) -> PointVe
     PointVector::new_point(x,y,z)
 }
 
+pub fn reflect(n: PointVector, normal: PointVector) -> PointVector {
+    n - normal * 2 * n.dot(&normal)
+}
+
+
+
+
 #[derive(PartialOrd, Clone, Copy, Debug)]
 pub struct PointVector {
     pub x: f32,
@@ -174,6 +181,15 @@ impl Mul<i32> for PointVector {
     fn mul(self, rhs: i32) -> Self::Output {
         let frhs = rhs as f32; 
         self.multiply_scalar(frhs)
+    }
+}
+
+impl Mul<PointVector> for PointVector {
+
+    type Output = PointVector;
+
+    fn mul(self, rhs: PointVector) -> Self::Output {
+        self.cross(&rhs)
     }
 }
 
@@ -397,6 +413,22 @@ mod tests_pointvector {
         let v2 = vector(2,3,4);
         assert_eq!(v1.cross(&v2), vector(-1,2,-1));
         assert_eq!(v2.cross(&v1), vector(1,-2,1));
+    }
+
+    #[test]
+    fn test_reflect() {
+        let v = vector(1, -1, 0);
+        let n = vector(0, 1, 0);
+        let r = reflect(v, n);
+        assert_eq!(r, vector(1, 1, 0));
+    }
+
+    #[test]
+    fn test_reflect2() {
+        let v = vector(0, -1, 0);
+        let n = vector(2.0_f32.sqrt()/2.0, 2.0_f32.sqrt()/2.0, 0);
+        let r = reflect(v, n);
+        assert_eq!(r, vector(1, 0, 0));
     }
 
 }
