@@ -1,6 +1,7 @@
 use crate::point_vector::{PointVector,point,vector};
 use crate::matrix::Matrix;
 use crate::ray::Ray;
+use crate::material::Material;
 use crate::utils::compare_float;
 
 
@@ -11,6 +12,7 @@ pub trait Shape{}
 pub struct Sphere {
     pub center: PointVector,
     pub transform: Matrix,
+    pub material: Material,
     radius: f32 
 }
 
@@ -20,6 +22,7 @@ impl Sphere {
         Sphere{
             center: point(0,0,0),
             transform: Matrix::identity(4),
+            material: Material::default(),
             radius: 1.0
         }
     }
@@ -85,7 +88,7 @@ mod tests_sphere {
     fn test_normal_at3() {
         let s = Sphere::new();
         let n = s.normal_at(point(0,0,1));
-        assert_eq!(n, vector(1, 0, 0));
+        assert_eq!(n, vector(0, 0, 1));
     }
     #[test]
     fn test_normal_at4() {
@@ -121,4 +124,32 @@ mod tests_sphere {
         let n = s.normal_at(point(0,y,z));
         assert_eq!(n, vector(0, 0.97014, -0.24254));
     }
+
+    #[test]
+    fn test_sphere_material() {
+        let s = Sphere::new();
+        let m = &s.material;
+        assert_eq!(*m, Material::default());
+    }
+
+    #[test]
+    fn test_sphere_material2() {
+        let mut s = Sphere::new();
+        let mut m = Material::default();
+        m.ambient = 1.0;
+        s.material = m;
+        assert_eq!(s.material,m);
+    }
 }
+
+// ​Scenario​: A sphere has a default material
+// ​ 	  ​Given​ s ← sphere()
+// ​ 	  ​When​ m ← s.material
+// ​ 	  ​Then​ m = material()
+// ​ 	
+// ​ 	​Scenario​: A sphere may be assigned a material
+// ​ 	  ​Given​ s ← sphere()
+// ​ 	    ​And​ m ← material()
+// ​ 	    ​And​ m.ambient ← 1
+// ​ 	  ​When​ s.material ← m
+// ​ 	  ​Then​ s.material = m

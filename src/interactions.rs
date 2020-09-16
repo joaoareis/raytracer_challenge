@@ -2,6 +2,9 @@ use crate::shapes::{Sphere,Shape};
 use crate::ray::Ray;
 use crate::utils::compare_float;
 use crate::point_vector::{PointVector,point,vector};
+use crate::point_light::PointLight;
+use crate::color::Color;
+use crate::material::Material;
 
 
 pub struct Intersections<'a> {
@@ -87,6 +90,10 @@ pub fn intersect<'a>(s: &'a Sphere, r: &Ray) -> Vec<Intersection<'a>>{
 
 }
 
+
+pub fn lighting(m: Material, light: PointLight, position: PointVector, eyev: PointVector, normalv: PointVector) -> Color {
+    Color::new(0,0,0)
+}
 
 
 #[cfg(test)]
@@ -264,6 +271,28 @@ mod tests_shapes {
         s.set_transform(&transformations::translate(5, 0, 0));
         let xs = intersect(&s, &r);
         assert_eq!(xs.len(), 0);
+    }
+
+    #[test]
+    fn test_lighting_1() {
+        let m = Material::default();
+        let position = point(0, 0, 0);
+        let eyev = vector(0, 0, -1);
+        let normalv = vector(0, 0, -1);
+        let light = PointLight::new(Color::new(1,1,1), point(0, 0, -10),);
+        let result = lighting(m, light, position, eyev, normalv);
+        assert_eq!(result, Color::new(1.9,1.9,1.9))
+    }
+
+    #[test]
+    fn test_lighting_2() {
+        let m = Material::default();
+        let position = point(0, 0, 0);
+        let eyev = vector(0, 0, -1);
+        let normalv = vector(0, 0, -1);
+        let light = PointLight::new(Color::new(1,1,1), point(0, 0, -10),);
+        let result = lighting(m, light, position, eyev, normalv);
+        assert_eq!(result, Color::new(1.0,1.0,1.0))
     }
 
 }

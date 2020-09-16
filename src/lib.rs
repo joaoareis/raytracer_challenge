@@ -7,3 +7,5 @@ pub mod transformations;
 pub mod ray;
 pub mod shapes;
 pub mod interactions;
+pub mod point_light;
+pub mod material;
