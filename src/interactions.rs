@@ -1,7 +1,7 @@
 use crate::shapes::{Sphere,Shape};
 use crate::ray::Ray;
 use crate::utils::compare_float;
-use crate::point_vector::{PointVector,point,vector};
+use crate::point_vector::{PointVector,point,vector,reflect};
 use crate::point_light::PointLight;
 use crate::color::Color;
 use crate::material::Material;
@@ -92,7 +92,36 @@ pub fn intersect<'a>(s: &'a Sphere, r: &Ray) -> Vec<Intersection<'a>>{
 
 
 pub fn lighting(m: Material, light: PointLight, position: PointVector, eyev: PointVector, normalv: PointVector) -> Color {
-    Color::new(0,0,0)
+    let effective_color = m.color * light.intensity;
+    let mut specular : Color;
+    let diffuse : Color;
+    let ambient = effective_color * m.ambient;
+    
+    let light_vector = light.position - position;
+    let cos_light_normal = &light_vector.dot(&normalv)/(light_vector.magnitude()*normalv.magnitude());
+    if cos_light_normal <= 0.0 {
+        specular = Color::new(0, 0, 0);
+        diffuse = Color::new(0, 0, 0);
+    }
+    else {
+        diffuse = effective_color * m.diffuse * cos_light_normal;
+    
+
+        let reflect_vector = reflect(light_vector.negate(), normalv);
+        let cos_reflect_eye = &reflect_vector.dot(&eyev)/(reflect_vector.magnitude() * eyev.magnitude());
+        
+        if cos_reflect_eye <= 0.0 {
+            specular = Color::new(0,0,0);
+
+        }
+
+        else {
+            specular = effective_color * m.specular * cos_reflect_eye.powf(m.shiness);
+        }
+    }
+    
+    //println!("{:?} {:?} {:?} {:?}", ambient, diffuse, specular, eyev.magnitude());
+    ambient + diffuse + specular
 }
 
 
@@ -279,7 +308,7 @@ mod tests_shapes {
         let position = point(0, 0, 0);
         let eyev = vector(0, 0, -1);
         let normalv = vector(0, 0, -1);
-        let light = PointLight::new(Color::new(1,1,1), point(0, 0, -10),);
+        let light = PointLight::new(point(0, 0, -10),Color::new(1,1,1));
         let result = lighting(m, light, position, eyev, normalv);
         assert_eq!(result, Color::new(1.9,1.9,1.9))
     }
@@ -288,11 +317,44 @@ mod tests_shapes {
     fn test_lighting_2() {
         let m = Material::default();
         let position = point(0, 0, 0);
-        let eyev = vector(0, 0, -1);
+        let eyev = vector(0, 2_f32.sqrt()/2_f32, -2_f32.sqrt()/2_f32);
         let normalv = vector(0, 0, -1);
-        let light = PointLight::new(Color::new(1,1,1), point(0, 0, -10),);
+        let light = PointLight::new(point(0, 0, -10),Color::new(1,1,1));
         let result = lighting(m, light, position, eyev, normalv);
         assert_eq!(result, Color::new(1.0,1.0,1.0))
+    }
+
+    #[test]
+    fn test_lighting_3() {
+        let m = Material::default();
+        let position = point(0, 0, 0);
+        let eyev = vector(0, 0, -1);
+        let normalv = vector(0, 0, -1);
+        let light = PointLight::new(point(0, 10, -10),Color::new(1,1,1));
+        let result = lighting(m, light, position, eyev, normalv);
+        assert_eq!(result, Color::new(0.7364,0.7364,0.7364))
+    }
+
+    #[test]
+    fn test_lighting_4() {
+        let m = Material::default();
+        let position = point(0, 0, 0);
+        let eyev = vector(0, -2_f32.sqrt()/2_f32, -2_f32.sqrt()/2_f32);
+        let normalv = vector(0, 0, -1);
+        let light = PointLight::new(point(0, 10, -10),Color::new(1,1,1));
+        let result = lighting(m, light, position, eyev, normalv);
+        assert_eq!(result, Color::new(1.6364,1.6364,1.6364))
+    }
+
+    #[test]
+    fn test_lighting_5() {
+        let m = Material::default();
+        let position = point(0, 0, 0);
+        let eyev = vector(0, 0, -1);
+        let normalv = vector(0, 0, -1);
+        let light = PointLight::new(point(0, 0, 10),Color::new(1,1,1));
+        let result = lighting(m, light, position, eyev, normalv);
+        assert_eq!(result, Color::new(0.1,0.1,0.1))
     }
 
 }

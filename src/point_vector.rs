@@ -73,7 +73,7 @@ impl PointVector {
         }
     }
 
-    fn negate(&self) -> PointVector {
+    pub fn negate(&self) -> PointVector {
         PointVector {
             x: -self.x,
             y: -self.y,
@@ -113,7 +113,7 @@ impl PointVector {
          }
      }
 
-     fn magnitude(&self) -> f32 {
+     pub fn magnitude(&self) -> f32 {
         (self.x.powi(2) + self.y.powi(2) + self.z.powi(2) + self.w.powi(2)).sqrt()
      }
 

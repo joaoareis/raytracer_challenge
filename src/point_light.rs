@@ -2,9 +2,10 @@ use crate::point_vector::PointVector;
 use crate::color::Color;
 
 
+#[derive(Copy,Clone)]
 pub struct PointLight {
-    intensity: Color,
-    position: PointVector
+    pub intensity: Color,
+    pub position: PointVector
 }
 
 impl PointLight {
