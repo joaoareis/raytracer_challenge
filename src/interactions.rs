@@ -97,9 +97,9 @@ pub fn lighting(m: Material, light: PointLight, position: PointVector, eyev: Poi
     let diffuse : Color;
     let ambient = effective_color * m.ambient;
     
-    let light_vector = light.position - position;
-    let cos_light_normal = &light_vector.dot(&normalv)/(light_vector.magnitude()*normalv.magnitude());
-    if cos_light_normal <= 0.0 {
+    let light_vector = (light.position - position).normalize();
+    let cos_light_normal = light_vector.dot(&normalv);//(light_vector.magnitude()*normalv.magnitude());
+    if cos_light_normal < 0.0 {
         specular = Color::new(0, 0, 0);
         diffuse = Color::new(0, 0, 0);
     }
@@ -108,15 +108,15 @@ pub fn lighting(m: Material, light: PointLight, position: PointVector, eyev: Poi
     
 
         let reflect_vector = reflect(light_vector.negate(), normalv);
-        let cos_reflect_eye = &reflect_vector.dot(&eyev)/(reflect_vector.magnitude() * eyev.magnitude());
-        
+        let cos_reflect_eye = reflect_vector.dot(&eyev);//(reflect_vector.magnitude() * eyev.magnitude());
+    
         if cos_reflect_eye <= 0.0 {
             specular = Color::new(0,0,0);
 
         }
 
         else {
-            specular = effective_color * m.specular * cos_reflect_eye.powf(m.shiness);
+            specular = light.intensity * m.specular * cos_reflect_eye.powf(m.shiness);
         }
     }
     
